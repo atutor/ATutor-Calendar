@@ -1,0 +1,94 @@
+ ---------------------------
+|ATutor Calendar Module v1.0|
+ ---------------------------
+ 
+ ------------
+|Requirements|
+ ------------
+ This module requires that the module_extend_date patch be installed for the courses, tests and assignments modules. 
+
+ ----------------
+|Module Structure|
+ ----------------
+ 
+    -index.php                              -- Index page for students.
+    
+    -index_instructor.php                   -- Index page for instructors.
+    
+    -index_admin.php                        -- Index page for administrators.
+    
+    -calendar.php                           -- Calendar backend initialization script. 
+                                                Loads the structure of the calendar page i.e. the calendar itself as well as the different views
+                              
+    -js/calendar.js                         -- Calendar frontend initialization and managing script
+                                                Initializes the calendar as well as the views. Loads the course dates via AJAX by calling 
+                                                dateretrieval.php.
+                              
+	-dateretrieval.php                      -- Script which calls the module_extend_date.php script of the course,tests and assignments modules.
+	                                            It is called via AJAX from calendar.js.
+	                          
+	
+	-module_extend_date.php                 -- This script is part of the course,tests and assignments modules but is required for the functioning
+	                                            of the ATutor Calendar Module.
+	                           	                It exposes the dates from the ATutor database which are relevant to the user.
+	                           	
+    -export_import.php                      -- Initializes the export class and user's timezone settings which are essential for exporting.
+	                           	
+	-include/classes/CalExport.class.php    -- This class handles the Exporting of ATutor calendar dates to iCal format.
+	                                            Loads the dates via module_extend_date.php and produces a .ics file which can be used in 
+	                                            calendars like Google Calendar.
+	                            
+ -----------------	                          
+|Things to improve|	
+ -----------------
+ * The overall look of the calendar as well as the views can be improved, so that users can find it pleasing.
+ * The event description format as well as the content format can be improved.
+
+ ----
+|TODO|
+ ----
+ * Import feature has to be added.
+ * The event description format as well as the content format should be made more generic.
+ * Personalized calendar, where users can create their own events, needs to be implemented.
+ 
+CINDY'S NOTES
+A few suggestions:
+
+1. delete the backup scripts and the scripts that are no longer in use or don't belong to where they are now
+These scripts include the ones with 0KB, *.bak.*, scripts that are not in use or at the wrong place, for instance, index_mystart.php, index_admin.php, calendar/Module.class.php, etc
+
+2. coding style
+- Indentation: Correct the mixture of tabs and spaces. Stick consistently with either 4 spaces or 1 tab for each indentation.
+- Removed the experimenting and debugging code. This type of code appears in almost every single script. A good example is module.php
+
+3. directory structure
+- To follow ATutor directory naming standard, rename "includes" directory to "include", rename "img" to "images"
+- In your current "includes" directory, there are some third-party php libraries, create a new directory at the same level of "includes" and move all php libraries in
+- "references" directory: if I understand this directory correctly, this directory does not contain any code that's required by calendar module. It's mainly for the manual and example code of the third party libraries. Only simplehtmldom_1_5" for now. If so, this folder can be removed. Instead, add the urls that point to the useful references into your documentation
+- "tooltip" directory contains only the images for tooltip. These images would fit nicely into "images/tooltip" directory. The current "tooltip" directory can be removed
+
+4. The code detail
+- module.php, line 16, you have: 'title_var'=>'ATutor Calendar'
+'title_var' is meant to be linked with a language token which is fetched from "language_text" table, this line should be changed to 'title_var'=>'atutor_calendar'. The definition of 'atutor_calendar' @ "language_text" table should be included in module.sql - INSERT INTO `language_text` VALUES ('en', '_module','atutor_calendar','ATutor Calendar',NOW(),'');
+
+The same thing happens in line 28, 60 @ module.php. You'd like to go through other scripts to correct the same issue.
+
+BTW, in your module.sql, you already have language token 'calendar' defined. If you decided to call your module 'ATutor Calendar', the latter one should be used across the module and the definition of 'calendar' can be removed.
+
+- calendar.php, line 2, you have: echo "<script language='javascript'>calendar=true;</script>";
+Is this for debugging purpose? Remove it if it's unnecessary. Check other scripts to remove all the debugging code.
+
+- dateretrieval.php, line 31 - 36, where you explicitly call extend_date() on 3 modules (courses, assignments and tests). The same issue is in includes/classes/CalExport.class.php
+This issue seems resulting from some misunderstanding of the module concept. The right way is that once "module_extend_date.php" is found in any of the module, Module.class.php calls on extend_date() function automatically and extracts the dates and its type. The type could be the module name itself which allows calendar module to differentiate the dates. extend_date() function should be dealt with at the system level rather than being called by any modules themselves, which is sort of like hardcoding the processed dates that reduces the code portability. Solving this issue requires the further change in Module.class.php and probably even each module_extend_date.php
+
+- export_import.php
+A proper name since this script is more for setting timezone at export.
+line 25 - 28, 90, 108, 130, 141, 143, 147, replace label wording with language tokens which are defined in "language_text" table @ module.sql. Can you go through all the scripts to fix the similar issue of the hard-coded wording or sentences.
+
+- includes/classes/CalExport.class.php, 
+line 2: class name "CalendarExportImport", should it be renamed to "CalendarExport" as it's solely for export?
+line 45: replace 'Inclusive Design Insitute' with language token that is defined in "language_text" table @ module.sql
+line 154 - 387: where properties of each type of date are defined. The code for each type is quite similar. Can you use one common function to be shared by each type?
+line 141 - 143: avoid hard-coded fetching on particular modules. What if there are dates defined from other modules?
+
+The last, ATutor uses infusion library that contains jquery and jquery tooltip as well. If you view the page source, you will find the inclusion of "infusionAll.js" in the <head>, which is the third party infusion library. The jquery or tooltip version may not be the same as the ones you are using. It's totally fine that you use another tooltip plugin that best suits your need. I'm just wondering whether you think about the possible jquery conflict as there will be 2 jquery and jquery tooltips loaded when calendar module is loaded. How does calendar module ensure it is using the ones that come with calendar module? The way that in my mind to avoid the conflict is another different jquery namespace. What do you think?

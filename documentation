@@ -1,0 +1,133 @@
+ATutor Calendar Module Documentation
+
+Contents-------------------
+ |--Introduction
+ |--Requirements
+ |--Installation
+ |--Design & Implementation
+    |-- Calendar Interface
+    |-- Accordion(Views) Interface
+        |-- Month View
+        |-- Week View
+        |-- Day View
+    |-- Export Interface
+ |--Code Structure
+    |-- Module
+    |-- Patch
+ |--TODO
+  -------------------------
+  
+ INTRODUCTION
+ ------------
+ 
+  The ATutor Calendar Module allows the user to view the dates relevant to his/her courses using a simple calendar + accordion interface.
+  The calendar accesses dates via AJAX. The accordion provides the different views.
+  
+ REQUIREMENTS
+ ------------
+ 
+  This module requires that the atutor_cal_1 patch be installed on the server, which updates the Module.class.php script.
+  
+  Note:- There are module_extend_date.php scripts located in 3 folders(assignments,tests and courses) in the patch folder. 
+         These have to be manually copied into the respective module folders assignments(mods/_standard/assignments),
+         tests(mods/_standard/tests) and courses(mods/_core/courses).
+         
+ 
+ INSTALLATION
+ ------------
+ 
+   Refer to http://help.atutor.ca/developer/modules.html#installation on how to install a module.
+   
+ DESIGN & IMPLEMENTATION
+ -----------------------
+ 
+  The ATutor Calendar Module uses a calendar + accordion interface. The calendar provides the users with the dates relevant to the course. 
+  The accordion provides the different views for each date namely Month,Week and Date views. It also has an export interface.
+  
+  Calendar Interface
+  ------------------
+     The calendar interface displays the dates based on the courses that the user is enrolled in. Each date has its own class. For example, course 
+     dates are displayed in a color different from the test dates. This makes it easier for the user to distinguish dates. The calendar receives
+     these dates via the modules which are exposed using the module_extend_date.php script. The calendar interface also uses tooltips which gives
+     the users a quick view of the events on that date. When the number of events increases, the tooltip content will be restricted because the tooltip
+     is just for giving a brief and quick idea of the events on that date. This is implemented using the jQuery UI plugin Datepicker which is highly
+     configurable. 
+More info can be found at http://jqueryui.com/demos/datepicker/
+     
+  Accordion(Views) Interface
+  --------------------------
+     The accordion or views interface provides with the user a more detailed event description. It is divided into 3 views namely Month,Week and Date views which are explained below.
+     
+        Month View
+        ----------
+         This view shows other dates that are in the same month as the currently selected date and separates them based on the week of the month that the dates are in. Clicking on any date in the Month View will load the Day View of that date.
+         
+        Week View
+        ---------
+         This view shows other dates that are in the same week as the currently selected date. Clicking any date in the Week View loads the Day View of that date.
+        
+        Day View
+        --------
+         This view shows the detailed description of events that are occuring on a particular date.
+         
+     The accordion interface is implemented using the jQuery UI plugin Accordion which is highly configurable.
+         
+  Export Interface
+  ----------------
+     This allows the user to export their course dates to the iCal calendar format which can be used in calendars like Google Calendar.
+     
+  CODE STRUCTURE
+  --------------
+  
+   MODULE
+   ------
+   
+   The following is the code structure for the module.
+   
+    -index.php                              -- Index page for students.
+    
+    -index_instructor.php                   -- Index page for instructors.
+    
+    -index_admin.php                        -- Index page for administrators.
+    
+    -calendar.php                           -- Calendar backend initialization script. 
+                                                Loads the structure of the calendar page i.e. the calendar itself as well as the different views
+                              
+    -js/calendar.js                         -- Calendar frontend initialization and managing script
+                                                Initializes the calendar as well as the views. Loads the course dates via AJAX by calling 
+                                                dateretrieval.php.
+                              
+	-dateretrieval.php                      -- Script which calls the module_extend_date.php script of the course,tests and assignments modules.
+	                                            It is called via AJAX from calendar.js.
+	                          
+	
+	-module_extend_date.php                 -- This script is part of the course,tests and assignments modules but is required for the functioning
+	                                            of the ATutor Calendar Module.
+	                           	                It exposes the dates from the ATutor database which are relevant to the user.
+	                           	
+    -export_import.php                      -- Initializes the export class and user's timezone settings which are essential for exporting.
+	                           	
+	-include/classes/CalExport.class.php    -- This class handles the Exporting of ATutor calendar dates to iCal format.
+	                                            Loads the dates via module_extend_date.php and produces a .ics file which can be used in 
+	                                            calendars like Google Calendar.  
+
+   PATCH
+   -----
+   
+     Module.class.php(modified) -- The script Module.class.php(mods/_core/modules/classes/) is altered so that a extend_date function is added. This
+     							   allows dateretrieval.php to access dates via the module(courses|tests|assignments).
+     							   
+     module_extend_date.php     -- This script allows the modules to expose the dates that are associated with that module. It should be located
+                                   in all 3 modules(courses|tests|assignments).
+                                   
+   TODO
+   ----
+     * Improve IE support.
+     * Add Import feature.
+     * Allow personalized events to be added.
+     * Improve timezone implementation.
+     * Improve cross-browser support.
+
+   REFERENCE
+   _________
+	http://simplehtmldom.sourceforge.net/manual.htm     
